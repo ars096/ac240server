@@ -12,7 +12,7 @@
 #include "ac240socket.h"
 
 
-volatile sig_atomic_t do_finalize = 0;
+extern volatile sig_atomic_t do_finalize = 0;
 
 typedef struct _ac240msg{
   double timestamp;
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
       printf("waiting for client connection ...\n");
       
       while(!do_finalize)
-	{	  
+	{
 	  sock_stat = socket_wait_connection(server, &client);
 	  if(sock_stat < 0)
 	    {

@@ -1,8 +1,13 @@
 
 #include <stdio.h>
+#include <signal.h>
 #include <memory.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+
+extern volatile sig_atomic_t do_finalize;
+
 
 long socket_init(long *sockfd, long port)
 {
@@ -81,11 +86,17 @@ long socket_wait_connection(const long server_sockfd, long *client_sockfd)
       return -2;
     }
   
-  if(!FD_ISSET(server_sockfd, &fds))
+  if(FD_ISSET(server_sockfd, &fds)){}
+  else
     {
       return -3;
-   }
-  
+    }
+
+  if(do_finalize)
+    {
+      return -1;
+    }
+    
   if((*client_sockfd = accept(server_sockfd, (struct sockaddr *)&client, &len)) < 0)
     {
       printf("WARNING: accept() failure\n");

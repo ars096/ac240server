@@ -1,0 +1,21 @@
+Before running make command, you have to install following header files in this directory. All header files are provided by Acqiris.
+
+[Required files for this directory]
+- AcqirisD1Import.h
+- AcqirisD1Interface.h
+- AcqirisDataTypes.h
+- AcqirisErrorCodes.h
+- AcqirisExDataTypes.h
+- AcqirisExImport.h
+- AcqirisExInterface.h
+- AcqirisG4Import.h
+- AcqirisG4Interface.h
+- AcqirisImport.h
+- AcqirisInterface.h
+- AcqirisT3Import.h
+- AcqirisT3Interface.h
+- ivi.h
+- visa.h
+- visatype.h
+- vpptype.h
+

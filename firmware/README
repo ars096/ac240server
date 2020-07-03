@@ -1,0 +1,6 @@
+Before starting ac240server, you have to install following files in this directory.
+
+[Required files for this directory]
+- AC240FFT2GSs.bit
+    FPGA firmware provided by Acqiris
+

@@ -65,9 +65,26 @@ long socket_init(long *sockfd, long port)
 long socket_wait_connection(const long server_sockfd, long *client_sockfd)
 {
   struct sockaddr_in client;
-  int len = sizeof(client);  
+  int len = sizeof(client);
 
-  printf("waiting for client connection ...\n");
+  fd_set fds;
+  struct timeval tv;
+  
+  tv.tv_sec = 0;
+  tv.tv_usec = 100000;
+  
+  FD_ZERO(&fds);
+  FD_SET(server_sockfd, &fds);
+  
+  if(select(server_sockfd+1, &fds, NULL, NULL, &tv) == 0)
+    {
+      return -2;
+    }
+  
+  if(!FD_ISSET(server_sockfd, &fds))
+    {
+      return -3;
+   }
   
   if((*client_sockfd = accept(server_sockfd, (struct sockaddr *)&client, &len)) < 0)
     {
@@ -83,7 +100,7 @@ long socket_wait_connection(const long server_sockfd, long *client_sockfd)
 
 long socket_check_connection(long client)
 {
-  fd_set fds, fds0;
+  fd_set fds;
   struct timeval tv;
   char buf[1];
   int ret;
@@ -91,13 +108,10 @@ long socket_check_connection(long client)
   tv.tv_sec = 0;
   tv.tv_usec = 0;
 
+  FD_ZERO(&fds);
+  FD_SET(client, &fds);
   
-  FD_ZERO(&fds0);
-  FD_SET(client, &fds0);
-  
-  memcpy(&fds, &fds0, sizeof(fd_set));
   ret = select(client+1, &fds, NULL, NULL, &tv);
-
   if(ret == 0)
     {
       return 0;

@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -10,6 +11,8 @@
 #include "ac240controller.h"
 #include "ac240socket.h"
 
+
+volatile sig_atomic_t do_finalize = 0;
 
 typedef struct _ac240msg{
   double timestamp;
@@ -241,9 +244,23 @@ void print_status(ac240msg *msg)
 	     msg->temp_fpga);
 }
 
+void sigint_handler(int sig)
+{
+  printf("\n");
+  printf(">>> Interruption signal is detected <<<\n");
+  printf("\n");
+  do_finalize = 1;
+}
+
 int main(int argc, char *argv[])
 {
   nice(-20);
+
+  if(signal(SIGINT, sigint_handler) == SIG_ERR)
+    {
+      printf("Failed to configure signal handler. System aborted.\n");
+      exit(1);
+    }
   
   printf("...............\n");
   printf("  ac240server  \n");
@@ -321,8 +338,10 @@ int main(int argc, char *argv[])
       printf("ac240server started (TCP port %ld)\n", port);
       printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
       
-      while(1)
-	{
+      printf("waiting for client connection ...\n");
+      
+      while(!do_finalize)
+	{	  
 	  sock_stat = socket_wait_connection(server, &client);
 	  if(sock_stat < 0)
 	    {
@@ -335,7 +354,7 @@ int main(int argc, char *argv[])
 	  
           if(showstatus==0){ printf("data streaming ...\n"); }
 	  
-	  while(1)
+	  while(!do_finalize)
 	    {
 	      wait_until_start_time(start, integ, fpgainteg);
 	      
@@ -368,6 +387,8 @@ int main(int argc, char *argv[])
 		  break;
 		}
 	    }
+	  
+	  printf("waiting for client connection ...\n");	  
 	}
     }
   
@@ -381,6 +402,7 @@ int main(int argc, char *argv[])
   ac240_close();
   
   printf("\n");
+  printf("ac240server aborted\n");
   printf("bye\n");
   printf("\n");
   
